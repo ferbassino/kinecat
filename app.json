@@ -26,7 +26,9 @@
       "usesCleartextTraffic": true,
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.HIGH_SAMPLING_RATE_SENSORS"
+        "android.permission.HIGH_SAMPLING_RATE_SENSORS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.ferbassino.kinecat"
     },
@@ -34,6 +36,15 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true,
+            "enableMinifyInReleaseBuilds": false
+          }
+        }
+      ],
       [
         "expo-font",
         {
@@ -45,8 +56,17 @@
         }
       ],
       "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      "./plugins/withAndroidPackaging"
     ],
-    "assetBundlePatterns": ["**/*"]
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9a02f2bf-3836-4166-8c44-9066465cfdc6"
+      }
+    },
+    "owner": "ferbassino"
   }
 }
