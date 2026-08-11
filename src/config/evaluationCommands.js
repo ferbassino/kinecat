@@ -1,0 +1,47 @@
+export const COMMANDS = {
+  PREPARED: {
+    key: "PREPARED",
+    text: "Preparado",
+    speech: "Preparado",
+    visual: "banner",
+    icon: "accessibility-outline",
+    hideAfter: 1400,
+  },
+  READY: {
+    key: "READY",
+    text: "Listo",
+    speech: "Listo",
+    visual: "banner",
+    icon: "checkmark-circle-outline",
+    hideAfter: 1400,
+  },
+  GO: {
+    key: "GO",
+    text: "¡Ahora!",
+    speech: "Ahora",
+    visual: "flash",
+    icon: "flash-outline",
+    hideAfter: 1600,
+  },
+  FINISHED: {
+    key: "FINISHED",
+    text: "Finalizado",
+    speech: "Prueba finalizada",
+    visual: "banner",
+    icon: "flag-outline",
+    hideAfter: 1800,
+  },
+  COUNTDOWN: {
+    key: "COUNTDOWN",
+    visual: "countdown",
+    hideAfter: 900,
+  },
+  RECORDING: {
+    key: "RECORDING",
+    text: "Midiendo...",
+    speech: "Midiendo",
+    visual: "banner",
+    icon: "radio-outline",
+    hideAfter: 1200,
+  },
+};

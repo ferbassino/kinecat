@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Kinecat",
+    "slug": "kinecat",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f0f"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./assets/icon.png",
+      "bundleIdentifier": "com.ferbassino.kinecat"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f0f"
+      },
+      "versionCode": 1,
+      "usesCleartextTraffic": true,
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.HIGH_SAMPLING_RATE_SENSORS"
+      ],
+      "package": "com.ferbassino.kinecat"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Inter-Bold.ttf",
+            "./assets/fonts/Inter-Medium.ttf",
+            "./assets/fonts/Inter-Light.ttf"
+          ]
+        }
+      ],
+      "expo-audio",
+      "expo-asset"
+    ],
+    "assetBundlePatterns": ["**/*"]
+  }
+}
