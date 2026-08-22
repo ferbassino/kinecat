@@ -8,6 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "test": "vitest run",
     "generate:icons": "node scripts/generate-app-icons.mjs",
     "prebuild:android": "expo prebuild --platform android --clean",
     "build:android:debug": "expo prebuild --platform android && cd android && gradlew.bat assembleDebug",
@@ -43,7 +44,8 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "babel-preset-expo": "~54.0.10",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.3",
+    "vitest": "^4.1.11"
   },
   "private": true,
   "expo": {
