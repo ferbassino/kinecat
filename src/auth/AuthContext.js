@@ -8,7 +8,6 @@ import React, {
   useMemo,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import client from "../api/client";
 import { fetchUserClients } from "../services/user";
 import {
   fetchEvaluationPlanByClient,
@@ -83,26 +82,7 @@ export const AuthProvider = ({ children }) => {
     checkLoggedIn();
   }, [loadUserClients, clearSession]);
 
-  const register = useCallback(async (email, password) => {
-    try {
-      const response = await client.post("/sign-up", { email, password });
-
-      if (response.data.success) {
-        const userData = response.data.user;
-        await AsyncStorage.setItem("user", JSON.stringify(userData));
-        setUser(userData);
-        return { success: true };
-      }
-      return { success: false, error: response.data.error };
-    } catch (error) {
-      console.error("Error en registro:", error);
-      return {
-        success: false,
-        error: error.response?.data?.error || "Error en la conexión",
-      };
-    }
-  }, []);
-
+  // Registro solo en la web (POST /create-user). No hay /sign-up en la API.
   const logout = useCallback(async () => {
     try {
       await clearSession();
@@ -182,7 +162,6 @@ export const AuthProvider = ({ children }) => {
     () => ({
       user,
       handleUser,
-      register,
       login,
       logout,
       loading,
@@ -200,7 +179,6 @@ export const AuthProvider = ({ children }) => {
     [
       user,
       handleUser,
-      register,
       login,
       logout,
       loading,

@@ -64,7 +64,11 @@ const HistoryScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🧠 Evaluation History</Text>
+      <Text style={styles.title}>Historial de evaluaciones</Text>
+      <Text style={styles.localOnlyNotice}>
+        Solo en este dispositivo. No se sincroniza con Kinecat web ni con la
+        nube.
+      </Text>
 
       {history.length > 0 ? (
         <FlatList
@@ -75,14 +79,16 @@ const HistoryScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        <Text style={styles.emptyText}>No evaluations recorded yet.</Text>
+        <Text style={styles.emptyText}>
+          Todavía no hay evaluaciones guardadas en este teléfono.
+        </Text>
       )}
 
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Text style={styles.backButtonText}>← Back</Text>
+        <Text style={styles.backButtonText}>← Volver</Text>
       </TouchableOpacity>
     </View>
   );
@@ -99,8 +105,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#00ffff",
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: 12,
     marginTop: 50,
+  },
+  localOnlyNotice: {
+    color: "rgba(255,255,255,0.55)",
+    fontSize: 13,
+    textAlign: "center",
+    marginBottom: 24,
+    paddingHorizontal: 12,
+    lineHeight: 18,
   },
   historyItem: {
     backgroundColor: "#1a1a1a",

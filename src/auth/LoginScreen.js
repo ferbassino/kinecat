@@ -172,10 +172,12 @@ const LoginScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.registerLink}
-          onPress={() => Linking.openURL("https://gestion-baskin.vercel.app/")}
+          onPress={() =>
+            Linking.openURL("https://gestion-baskin.vercel.app/")
+          }
         >
           <Text style={styles.registerText}>
-            No estas registrado? Visita BASKIN
+            ¿No estás registrado? Creá tu cuenta en Kinecat (web)
           </Text>
         </TouchableOpacity>
       </Animated.View>
