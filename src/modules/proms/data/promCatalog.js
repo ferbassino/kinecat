@@ -1,5 +1,12 @@
 export const PROM_CATALOG = [
   {
+    id: "rmdq",
+    title: "RMDQ",
+    subtitle: "Roland-Morris · discapacidad lumbar",
+    questions: 24,
+    accent: "#22d3ee",
+  },
+  {
     id: "oswestry",
     title: "Oswestry",
     subtitle: "Discapacidad lumbar",
@@ -12,6 +19,48 @@ export const PROM_CATALOG = [
     subtitle: "Discapacidad cervical",
     questions: 10,
     accent: "#a855f7",
+  },
+  {
+    id: "fabq",
+    title: "FABQ",
+    subtitle: "Miedo-evitación",
+    questions: 11,
+    accent: "#eab308",
+  },
+  {
+    id: "phq9",
+    title: "PHQ-9",
+    subtitle: "Estado de ánimo",
+    questions: 9,
+    accent: "#f97316",
+  },
+  {
+    id: "blue_flags",
+    title: "Blue Flags",
+    subtitle: "Trabajo y salud",
+    questions: 6,
+    accent: "#3b82f6",
+  },
+  {
+    id: "orebro",
+    title: "Örebro",
+    subtitle: "OMPSQ-10 · riesgo discapacidad",
+    questions: 10,
+    accent: "#111827",
+  },
+  {
+    id: "groc",
+    title: "GROC",
+    subtitle: "Cambio global percibido",
+    questions: 1,
+    accent: "#14b8a6",
+  },
+  {
+    id: "wdq",
+    title: "WDQ",
+    subtitle: "Discapacidad por whiplash",
+    questions: 13,
+    accent: "#8b5cf6",
   },
   {
     id: "dash",

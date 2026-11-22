@@ -45,8 +45,15 @@ export const STABILITY_EXERCISE_OPTIONS = [
   { value: "Apoyo Monopodal", label: "Apoyo Monopodal", type: "AM" },
 ];
 export const PROM_OPTIONS = [
+  { value: "rmdq", label: "RMDQ" },
   { value: "oswestry", label: "Oswestry" },
   { value: "ndi", label: "NDI" },
+  { value: "fabq", label: "FABQ" },
+  { value: "phq9", label: "PHQ-9" },
+  { value: "blue_flags", label: "Blue Flags" },
+  { value: "orebro", label: "Örebro" },
+  { value: "groc", label: "GROC" },
+  { value: "wdq", label: "WDQ" },
   { value: "dash", label: "DASH" },
   { value: "womac", label: "WOMAC" },
   { value: "eva", label: "EVA" },

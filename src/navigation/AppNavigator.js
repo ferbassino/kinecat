@@ -18,6 +18,9 @@ import JumpExerciseScreen from "../modules/jump/components/ExerciseScreen";
 import JumpResultsScreen from "../modules/jump/screens/JumpResults";
 import JumpSaveDataScreen from "../modules/jump/screens/SaveDataScreen";
 import PromsHomeScreen from "../modules/proms/screens/PromsHomeScreen";
+import WeightBearingSetupScreen from "../modules/weightBearing/screens/SetupScreen";
+import WeightBearingLiveScreen from "../modules/weightBearing/screens/LiveScreen";
+import WeightBearingResultsScreen from "../modules/weightBearing/screens/ResultsScreen";
 
 const Stack = createStackNavigator();
 
@@ -76,6 +79,19 @@ export default function AppNavigator() {
       <Stack.Screen name="JumpSaveData" component={JumpSaveDataScreen} />
 
       <Stack.Screen name="PromsHome" component={PromsHomeScreen} />
+
+      <Stack.Screen
+        name="WeightBearingSetup"
+        component={WeightBearingSetupScreen}
+      />
+      <Stack.Screen
+        name="WeightBearingLive"
+        component={WeightBearingLiveScreen}
+      />
+      <Stack.Screen
+        name="WeightBearingResults"
+        component={WeightBearingResultsScreen}
+      />
     </Stack.Navigator>
   );
 }

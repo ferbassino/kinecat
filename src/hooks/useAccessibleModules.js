@@ -16,12 +16,33 @@ export function useAccessibleModules(planEnabledIds = null) {
     const load = async () => {
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        const knownRaw = await AsyncStorage.getItem(
+          "@kinecat/knownAvailableModules",
+        );
+        const availableIds = MODULES.filter((module) => module.available).map(
+          (module) => module.id,
+        );
+        const known = knownRaw ? JSON.parse(knownRaw) : [];
+        const newlyAvailable = availableIds.filter(
+          (id) => !Array.isArray(known) || !known.includes(id),
+        );
+
+        let next = DEFAULT_ENABLED_IDS;
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length) {
-            setEnabledIds(parsed);
+            next = parsed;
           }
         }
+        if (newlyAvailable.length) {
+          next = [...new Set([...next, ...newlyAvailable])];
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        }
+        await AsyncStorage.setItem(
+          "@kinecat/knownAvailableModules",
+          JSON.stringify(availableIds),
+        );
+        setEnabledIds(next);
       } catch (error) {
         console.warn("No se pudieron cargar módulos habilitados:", error);
       } finally {
