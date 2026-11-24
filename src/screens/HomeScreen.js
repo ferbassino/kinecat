@@ -83,9 +83,14 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   const handleModulePress = (module) => {
-    if (module.route) {
-      navigation.navigate(module.route);
+    if (!module.route) return;
+    if (!navigation.getState?.()?.routeNames?.includes(module.route)) {
+      // Fast Refresh a veces deja el stack viejo; forzá reload de Expo (sacudir → Reload).
+      console.warn(
+        `[nav] Pantalla "${module.route}" no está en el stack. Recargá la app.`,
+      );
     }
+    navigation.navigate(module.route);
   };
 
   return (

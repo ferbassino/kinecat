@@ -15,8 +15,11 @@ import ArtroResultsScreen from "../modules/artro/screens/ResultsScreen";
 import ArtroSaveDataScreen from "../modules/artro/screens/SaveDataScreen";
 import JumpExerciseSelection from "../modules/jump/screens/ExerciseSelection";
 import JumpExerciseScreen from "../modules/jump/components/ExerciseScreen";
+import JumpLivePairScreen from "../modules/jump/screens/JumpLivePairScreen";
 import JumpResultsScreen from "../modules/jump/screens/JumpResults";
 import JumpSaveDataScreen from "../modules/jump/screens/SaveDataScreen";
+import AtrLivePairScreen from "../modules/atr/screens/AtrLivePairScreen";
+import AtrMeasureScreen from "../modules/atr/screens/AtrMeasureScreen";
 import PromsHomeScreen from "../modules/proms/screens/PromsHomeScreen";
 import WeightBearingSetupScreen from "../modules/weightBearing/screens/SetupScreen";
 import WeightBearingLiveScreen from "../modules/weightBearing/screens/LiveScreen";
@@ -74,9 +77,13 @@ export default function AppNavigator() {
         name="JumpExerciseSelection"
         component={JumpExerciseSelection}
       />
+      <Stack.Screen name="JumpLivePair" component={JumpLivePairScreen} />
       <Stack.Screen name="JumpExercise" component={JumpExerciseScreen} />
       <Stack.Screen name="JumpResults" component={JumpResultsScreen} />
       <Stack.Screen name="JumpSaveData" component={JumpSaveDataScreen} />
+
+      <Stack.Screen name="AtrLivePair" component={AtrLivePairScreen} />
+      <Stack.Screen name="AtrMeasure" component={AtrMeasureScreen} />
 
       <Stack.Screen name="PromsHome" component={PromsHomeScreen} />
 

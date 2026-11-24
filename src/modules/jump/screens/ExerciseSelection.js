@@ -61,6 +61,20 @@ const ExerciseSelection = ({ navigation }) => {
           <ModuleEvaluationContext moduleId="jump" accentColor="#a3e635" compact />
         </View>
 
+        <TouchableOpacity
+          style={styles.liveCard}
+          onPress={() => navigation.navigate("JumpLivePair")}
+        >
+          <Ionicons name="tv-outline" size={22} color="#67e8f9" />
+          <View style={styles.liveCardText}>
+            <Text style={styles.liveCardTitle}>CMJ · PC live</Text>
+            <Text style={styles.liveCardSub}>
+              Emparejá con Evaluar → CMJ · sensor (misma Wi‑Fi)
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+        </TouchableOpacity>
+
         {/* Lista de ejercicios */}
         <View style={styles.exercisesContainer}>
           {visibleExercises.length === 0 ? (
@@ -188,6 +202,32 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
+  liveCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: "rgba(8, 145, 178, 0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(34, 211, 238, 0.4)",
+  },
+  liveCardText: {
+    flex: 1,
+  },
+  liveCardTitle: {
+    color: "#67e8f9",
+    fontWeight: "800",
+    fontSize: 15,
+  },
+  liveCardSub: {
+    color: "#94a3b8",
+    fontSize: 12,
+    marginTop: 2,
+  },
   title: {
     color: "#ffffff",
     fontSize: 24,
