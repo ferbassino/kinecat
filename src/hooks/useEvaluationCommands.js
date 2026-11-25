@@ -1,28 +1,76 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import * as Speech from "expo-speech";
 import { COMMANDS } from "../config/evaluationCommands";
 import { useCommandSettings } from "../context/CommandSettingsContext";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Secuencia estándar KinApp: Preparado → Listo → ¡Ahora! → pausa 1,5 s */
+const DEFAULT_PRE_GO_LEAD_MS = 350;
+
+/**
+ * Secuencia: Preparado → Listo → (opcional: empezar a medir) → lead → ¡Ahora!
+ * Si `onBeforeGo` está definido, la captura ya corre antes de “Ahora”.
+ */
 export async function runStabilityStartSequence(emit, options = {}) {
-  await emit("PREPARED", { delay: 1000, ...options });
-  await emit("READY", { delay: 1000, ...options });
+  const {
+    onBeforeGo,
+    preGoLeadMs = DEFAULT_PRE_GO_LEAD_MS,
+    afterGoWaitMs,
+    interCommandGapMs = 220,
+  } = options;
+
+  await emit("PREPARED", { delay: interCommandGapMs, ...options });
+  await emit("READY", { delay: interCommandGapMs, ...options });
+
+  if (typeof onBeforeGo === "function") {
+    await onBeforeGo();
+    await wait(Math.max(0, Number(preGoLeadMs) || DEFAULT_PRE_GO_LEAD_MS));
+    await emit("GO", { waitForSpeech: false, ...options });
+    if (afterGoWaitMs != null) {
+      await wait(afterGoWaitMs);
+    }
+    return;
+  }
+
   await emit("GO", options);
-  await wait(1500);
+  await wait(afterGoWaitMs != null ? afterGoWaitMs : 1500);
 }
 
 export function useEvaluationCommands({ accentColor = "#00ffff" } = {}) {
   const { voiceEnabled } = useCommandSettings();
   const [cue, setCue] = useState(null);
+  const speakTokenRef = useRef(0);
 
-  const speak = useCallback(
-    (text) => {
-      if (!voiceEnabled || !text) return;
-      Speech.stop();
-      Speech.speak(String(text), { language: "es-ES" });
-    },
+  const speakAsync = useCallback(
+    (text) =>
+      new Promise((resolve) => {
+        if (!voiceEnabled || !text) {
+          resolve();
+          return;
+        }
+
+        const token = ++speakTokenRef.current;
+        try {
+          Speech.stop();
+        } catch {
+          // ignore
+        }
+
+        const finish = () => {
+          if (speakTokenRef.current === token) {
+            resolve();
+          } else {
+            resolve();
+          }
+        };
+
+        Speech.speak(String(text), {
+          language: "es-ES",
+          onDone: finish,
+          onStopped: finish,
+          onError: finish,
+        });
+      }),
     [voiceEnabled],
   );
 
@@ -37,6 +85,7 @@ export function useEvaluationCommands({ accentColor = "#00ffff" } = {}) {
       const speech = options.speech ?? definition.speech ?? text;
       const visual = options.visual ?? definition.visual ?? "banner";
       const hideAfter = options.hideAfter ?? definition.hideAfter ?? 1200;
+      const waitForSpeech = options.waitForSpeech !== false;
 
       const nextCue = {
         key: commandKey,
@@ -47,7 +96,13 @@ export function useEvaluationCommands({ accentColor = "#00ffff" } = {}) {
       };
 
       setCue(nextCue);
-      speak(speech);
+
+      if (waitForSpeech) {
+        await speakAsync(speech);
+      } else {
+        // Dispara voz sin bloquear (p.ej. “Ahora” ya con la prueba corriendo).
+        speakAsync(speech);
+      }
 
       if (options.delay) {
         await wait(options.delay);
@@ -65,7 +120,7 @@ export function useEvaluationCommands({ accentColor = "#00ffff" } = {}) {
 
       return nextCue;
     },
-    [accentColor, speak],
+    [accentColor, speakAsync],
   );
 
   const runStartSequence = useCallback(

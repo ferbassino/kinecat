@@ -31,3 +31,7 @@ export function formatSideLabel(value) {
 
 export const TEST_TIME_MS = 6000;
 export const START_DELAY_MS = 3000;
+
+/** Acento Artro (teal; sin violetas) */
+export const ARTRO_ACCENT = "#14b8a6";
+export const ARTRO_ACCENT_DARK = "#0f766e";

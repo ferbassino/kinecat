@@ -9,10 +9,10 @@ export const ATR_THRESHOLDS = {
 
 /**
  * Convención de colocación (obligatoria):
- * - Móvil DE COSTADO (paisaje), apoyado sobre su BORDE LARGO inferior
- *   (el borde de abajo cuando el teléfono está en vertical).
+ * - Móvil DE COSTADO con el BORDE IZQUIERDO hacia abajo (apoyado en la espalda).
  * - Pantalla mirando al evaluador.
- * - Extremo del puerto USB / carga hacia los PIES del paciente.
+ * - Extremo CÁMARA = IZQ del paciente (ATR −).
+ * - Extremo BASE / USB (enchufe) = DER del paciente (ATR +).
  *
  * Así el ATR mide la inclinación I/D del plano del aparato sobre la espalda
  * (no el “pitch” vertical del móvil en vertical).
@@ -76,7 +76,7 @@ export function detectPhonePose({ x, y, z }) {
   return {
     pose: "side",
     ok: true,
-    hint: "Orientación OK · USB hacia los pies · pantalla al evaluador",
+    hint: "Orientación OK · cámara=IZQ · USB=DER · borde izquierdo abajo",
   };
 }
 
@@ -93,4 +93,59 @@ export function atrZone(absDeg) {
   if (absDeg < ATR_THRESHOLDS.mild) return "ok";
   if (absDeg < ATR_THRESHOLDS.refer) return "watch";
   return "refer";
+}
+
+/**
+ * Suavizado leve EMA para ATR en vivo.
+ * alpha alto (≈0.45) sigue el pico sin “comer” ángulos.
+ */
+export function createAtrEma(alpha = 0.45) {
+  let prev = null;
+  return (value) => {
+    const v = Number(value);
+    if (!Number.isFinite(v)) return prev ?? 0;
+    if (prev == null) {
+      prev = v;
+      return v;
+    }
+    prev = alpha * v + (1 - alpha) * prev;
+    return prev;
+  };
+}
+
+/**
+ * Media móvil centrada muy leve (default 3) sobre la serie ATR.
+ * Conserva el máximo local para no achicar el pico |ATR|.
+ */
+export function smoothAtrSeries(points = [], windowSize = 3) {
+  if (!Array.isArray(points) || points.length < 3) return points || [];
+  const w = Math.max(3, windowSize | 0);
+  const half = Math.floor(w / 2);
+  return points.map((p, i) => {
+    let sum = 0;
+    let n = 0;
+    let localMaxAbs = 0;
+    let localMaxSigned = Number(p.atr) || 0;
+    for (let j = i - half; j <= i + half; j += 1) {
+      if (j < 0 || j >= points.length) continue;
+      const atr = Number(points[j]?.atr);
+      if (!Number.isFinite(atr)) continue;
+      sum += atr;
+      n += 1;
+      if (Math.abs(atr) > localMaxAbs) {
+        localMaxAbs = Math.abs(atr);
+        localMaxSigned = atr;
+      }
+    }
+    if (!n) return { ...p, atr: Number(p.atr) || 0 };
+    const avg = sum / n;
+    // Si el punto es un pico local, conservar el valor; si no, promedio leve.
+    const isLocalPeak =
+      Math.abs(Number(p.atr) || 0) >= localMaxAbs - 0.05;
+    const atr = isLocalPeak ? localMaxSigned : avg;
+    return {
+      ...p,
+      atr: Math.round(atr * 10) / 10,
+    };
+  });
 }

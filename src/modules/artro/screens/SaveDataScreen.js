@@ -206,7 +206,7 @@ const SaveDataScreen = ({ navigation, route }) => {
                 <Ionicons
                   name="person-circle-outline"
                   size={24}
-                  color="#a855f7"
+                  color="#14b8a6"
                   style={styles.clientInfoIcon}
                 />
                 <Text style={styles.clientGuardando}>
@@ -232,7 +232,7 @@ const SaveDataScreen = ({ navigation, route }) => {
                   selectClient(clientItem);
                   setSubmitError(null);
                 }}
-                accentColor="#a855f7"
+                accentColor="#14b8a6"
               />
             )}
 
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     letterSpacing: 1,
   },
-  appIcon: { width: 32, height: 32, tintColor: "#a855f7", marginRight: 8 },
+  appIcon: { width: 32, height: 32, tintColor: "#14b8a6", marginRight: 8 },
   scrollContent: { flexGrow: 1, paddingBottom: 24 },
   contentContainer: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 40 },
   summaryCard: {
@@ -433,9 +433,9 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "rgba(168, 85, 247, 0.2)",
+    borderColor: "rgba(20, 184, 166, 0.2)",
   },
-  clientName: { color: "#a855f7", fontSize: 18, fontWeight: "bold", marginBottom: 8 },
+  clientName: { color: "#14b8a6", fontSize: 18, fontWeight: "bold", marginBottom: 8 },
   clientEmail: { color: "#ffffff", fontSize: 14, fontWeight: "500", marginBottom: 4 },
   clientGuardando: {
     color: "rgba(255, 255, 255, 0.7)",
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   },
   clientInfoDivider: {
     height: 1,
-    backgroundColor: "rgba(168, 85, 247, 0.2)",
+    backgroundColor: "rgba(20, 184, 166, 0.2)",
     marginVertical: 12,
     width: "100%",
   },
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
-  changeClientText: { color: "#a855f7", fontSize: 12, fontWeight: "500" },
+  changeClientText: { color: "#14b8a6", fontSize: 12, fontWeight: "500" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -554,9 +554,9 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     marginTop: 16,
-    backgroundColor: "rgba(168, 85, 247, 0.15)",
+    backgroundColor: "rgba(20, 184, 166, 0.15)",
     borderWidth: 1,
-    borderColor: "rgba(168, 85, 247, 0.4)",
+    borderColor: "rgba(20, 184, 166, 0.4)",
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 85, 85, 0.4)",
   },
   modalButtonText: {
-    color: "#a855f7",
+    color: "#14b8a6",
     fontWeight: "bold",
     fontSize: 14,
     textAlign: "center",

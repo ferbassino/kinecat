@@ -62,14 +62,15 @@ const ExerciseSelection = ({ navigation }) => {
         </View>
 
         <TouchableOpacity
-          style={styles.liveCard}
+          style={styles.qrCard}
           onPress={() => navigation.navigate("JumpLivePair")}
+          activeOpacity={0.8}
         >
-          <Ionicons name="tv-outline" size={22} color="#67e8f9" />
-          <View style={styles.liveCardText}>
-            <Text style={styles.liveCardTitle}>CMJ · PC live</Text>
-            <Text style={styles.liveCardSub}>
-              Emparejá con Evaluar → CMJ · sensor (misma Wi‑Fi)
+          <Ionicons name="qr-code-outline" size={22} color="#a3e635" />
+          <View style={styles.qrCardText}>
+            <Text style={styles.qrCardTitle}>Escanear QR</Text>
+            <Text style={styles.qrCardSub}>
+              Conectar con Evaluar (CMJ en PC)
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  liveCard: {
+  qrCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -211,19 +212,19 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderRadius: 14,
-    backgroundColor: "rgba(8, 145, 178, 0.18)",
+    backgroundColor: "rgba(163, 230, 53, 0.1)",
     borderWidth: 1,
-    borderColor: "rgba(34, 211, 238, 0.4)",
+    borderColor: "rgba(163, 230, 53, 0.35)",
   },
-  liveCardText: {
+  qrCardText: {
     flex: 1,
   },
-  liveCardTitle: {
-    color: "#67e8f9",
+  qrCardTitle: {
+    color: "#a3e635",
     fontWeight: "800",
     fontSize: 15,
   },
-  liveCardSub: {
+  qrCardSub: {
     color: "#94a3b8",
     fontSize: 12,
     marginTop: 2,

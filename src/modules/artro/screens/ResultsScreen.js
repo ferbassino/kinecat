@@ -164,7 +164,7 @@ const ResultsScreen = ({ route, navigation }) => {
           onPress={() => navigation.navigate("ArtroEvaluationSetup")}
         >
           <Text style={styles.secondaryButtonText}>Nueva evaluación</Text>
-          <Ionicons name="refresh" size={18} color="#a855f7" />
+          <Ionicons name="refresh" size={18} color="#14b8a6" />
         </TouchableOpacity>
       </ScrollView>
 
@@ -176,7 +176,7 @@ const ResultsScreen = ({ route, navigation }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Ionicons name="lock-closed" size={40} color="#a855f7" />
+            <Ionicons name="lock-closed" size={40} color="#14b8a6" />
             <Text style={styles.modalTitle}>Sesión requerida</Text>
             <Text style={styles.modalText}>
               Iniciá sesión y seleccioná un paciente para guardar la evaluación.
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     letterSpacing: 1,
   },
-  appIcon: { width: 32, height: 32, tintColor: "#a855f7", marginRight: 8 },
+  appIcon: { width: 32, height: 32, tintColor: "#14b8a6", marginRight: 8 },
   scrollContent: { padding: 24, paddingBottom: 40 },
   summaryCard: {
     borderRadius: 16,
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
-  evalSubtitle: { color: "#a855f7", fontSize: 15, marginTop: 6 },
+  evalSubtitle: { color: "#14b8a6", fontSize: 15, marginTop: 6 },
   evalMeta: {
     color: "rgba(255,255,255,0.5)",
     fontSize: 13,
@@ -282,17 +282,17 @@ const styles = StyleSheet.create({
   secondaryButton: {
     marginTop: 12,
     borderWidth: 1,
-    borderColor: "rgba(168, 85, 247, 0.3)",
+    borderColor: "rgba(20, 184, 166, 0.3)",
     borderRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 24,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(168, 85, 247, 0.1)",
+    backgroundColor: "rgba(20, 184, 166, 0.1)",
   },
   secondaryButtonText: {
-    color: "#a855f7",
+    color: "#14b8a6",
     fontSize: 16,
     fontWeight: "500",
   },
@@ -327,17 +327,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: "rgba(168, 85, 247, 0.2)",
+    backgroundColor: "rgba(20, 184, 166, 0.2)",
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 24,
     width: "100%",
     borderWidth: 1,
-    borderColor: "rgba(168, 85, 247, 0.4)",
+    borderColor: "rgba(20, 184, 166, 0.4)",
     marginBottom: 12,
   },
   modalButtonText: {
-    color: "#a855f7",
+    color: "#14b8a6",
     fontWeight: "bold",
     textAlign: "center",
   },

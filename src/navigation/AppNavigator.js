@@ -13,6 +13,8 @@ import ArtroEvaluationSetupScreen from "../modules/artro/screens/EvaluationSetup
 import ArtroEvaluationScreen from "../modules/artro/screens/EvaluationScreen";
 import ArtroResultsScreen from "../modules/artro/screens/ResultsScreen";
 import ArtroSaveDataScreen from "../modules/artro/screens/SaveDataScreen";
+import ArtroLivePairScreen from "../modules/artro/screens/ArtroLivePairScreen";
+import ArtroLiveMeasureScreen from "../modules/artro/screens/ArtroLiveMeasureScreen";
 import JumpExerciseSelection from "../modules/jump/screens/ExerciseSelection";
 import JumpExerciseScreen from "../modules/jump/components/ExerciseScreen";
 import JumpLivePairScreen from "../modules/jump/screens/JumpLivePairScreen";
@@ -72,6 +74,11 @@ export default function AppNavigator() {
       <Stack.Screen name="ArtroEvaluation" component={ArtroEvaluationScreen} />
       <Stack.Screen name="ArtroResults" component={ArtroResultsScreen} />
       <Stack.Screen name="ArtroSaveData" component={ArtroSaveDataScreen} />
+      <Stack.Screen name="ArtroLivePair" component={ArtroLivePairScreen} />
+      <Stack.Screen
+        name="ArtroLiveMeasure"
+        component={ArtroLiveMeasureScreen}
+      />
 
       <Stack.Screen
         name="JumpExerciseSelection"

@@ -37,6 +37,7 @@ export default function jumpProcess(
 
     index5,
     index6,
+    indexEnd,
     arrayY0,
     arrayY3,
     arrayY4,
@@ -71,6 +72,8 @@ export default function jumpProcess(
   const cMJDataObject = {
     arrayY0F,
     cMJXAxis,
+    chartStartIndex: Math.max(0, index1),
+    chartEndIndex: Number.isFinite(indexEnd) ? indexEnd : accY.length - 1,
     tV,
     alturaVuelo,
     velD,

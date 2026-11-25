@@ -4,83 +4,84 @@ import Animated, { FadeIn, FadeInUp, FadeOut } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { instructions } from "../auxiliaries/objects/instructions";
+
+const DEFAULT_TIPS = [
+  {
+    icon: "time-outline",
+    text: "Mantenga la posición durante 30 segundos",
+  },
+  {
+    icon: "alert-circle-outline",
+    text: "Evite arquear la espalda",
+  },
+];
+
 const ExerciseInstructions = ({ exercise }) => {
   const [showInstructions, setShowInstructions] = useState(false);
 
   const current = instructions[exercise];
+  const tips = current?.tips?.length ? current.tips : DEFAULT_TIPS;
 
   const toggleInstructions = () => {
-    setShowInstructions(!showInstructions);
+    setShowInstructions((prev) => !prev);
   };
+
+  if (!current) return null;
 
   return (
     <Animated.View entering={FadeIn.duration(600)} style={styles.container}>
-      {/* Header con título */}
       <LinearGradient
         colors={current.gradient}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <Ionicons name={current.icon} size={24} color="white" />
+        <TouchableOpacity
+          onPress={toggleInstructions}
+          style={styles.infoButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel={
+            showInstructions ? "Ocultar instrucciones" : "Mostrar instrucciones"
+          }
+        >
+          <Ionicons
+            name={
+              showInstructions
+                ? "information-circle"
+                : "information-circle-outline"
+            }
+            size={24}
+            color="white"
+          />
+        </TouchableOpacity>
         <Text style={styles.title}>{current.title}</Text>
       </LinearGradient>
 
-      {/* Imagen (siempre visible) */}
-      <Image source={current.image} style={styles.image} resizeMode="cover" />
+      <Image source={current.image} style={styles.image} resizeMode="contain" />
 
-      {/* Botón desplegable de instrucciones */}
-      <TouchableOpacity
-        onPress={toggleInstructions}
-        style={styles.toggleButton}
-        activeOpacity={0.7}
-      >
-        <View style={styles.toggleButtonContent}>
-          <Ionicons
-            name="information-circle-outline"
-            size={20}
-            color={current.color}
-          />
-          <Text style={styles.toggleButtonText}>
-            {showInstructions
-              ? "Ocultar instrucciones"
-              : "Mostrar instrucciones"}
-          </Text>
-          <Ionicons
-            name={showInstructions ? "chevron-up" : "chevron-down"}
-            size={20}
-            color={current.color}
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* Instrucciones desplegables */}
-      {showInstructions && (
+      {showInstructions ? (
         <Animated.View
           entering={FadeInUp.duration(300)}
           exiting={FadeOut.duration(200)}
-          style={styles.instructionsContainer}
+          style={[styles.instructionsContainer, { borderLeftColor: current.color }]}
         >
           <Text style={styles.description}>{current.description}</Text>
 
           <View style={styles.tipsContainer}>
-            <View style={styles.tipItem}>
-              <Ionicons name="time-outline" size={18} color={current.color} />
-              <Text style={styles.tipText}>
-                Mantenga la posición durante 30 segundos
-              </Text>
-            </View>
-            <View style={styles.tipItem}>
-              <Ionicons
-                name="alert-circle-outline"
-                size={18}
-                color={current.color}
-              />
-              <Text style={styles.tipText}>Evite arquear la espalda</Text>
-            </View>
+            {tips.map((tip) => (
+              <View key={tip.text} style={styles.tipItem}>
+                <Ionicons
+                  name={tip.icon}
+                  size={18}
+                  color={current.color}
+                />
+                <Text style={styles.tipText}>{tip.text}</Text>
+              </View>
+            ))}
           </View>
         </Animated.View>
-      )}
+      ) : null}
     </Animated.View>
   );
 };
@@ -97,43 +98,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
   },
+  infoButton: {
+    marginRight: 8,
+  },
   title: {
     color: "#ffffff",
     fontSize: 16,
     fontFamily: "Inter-SemiBold",
-    marginLeft: 10,
     letterSpacing: 0.5,
   },
   image: {
     width: "100%",
-    height: 180,
+    height: 220,
     borderRadius: 8,
     marginBottom: 12,
-  },
-  toggleButton: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-  },
-  toggleButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  toggleButtonText: {
-    color: "#fff",
-    fontFamily: "Inter-SemiBold",
-    fontSize: 14,
-    flex: 1,
-    marginHorizontal: 10,
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
   instructionsContainer: {
     backgroundColor: "rgba(30,30,30,0.7)",
     borderRadius: 8,
     padding: 16,
     borderLeftWidth: 3,
-    borderLeftColor: "rgba(255,255,255,0.2)",
   },
   description: {
     color: "rgba(255,255,255,0.9)",

@@ -77,7 +77,7 @@ const SelectField = ({
                       {optionLabel}
                     </Text>
                     {value === optionValue ? (
-                      <Ionicons name="checkmark" size={18} color="#a855f7" />
+                      <Ionicons name="checkmark" size={18} color="#14b8a6" />
                     ) : null}
                   </TouchableOpacity>
                 );
@@ -144,9 +144,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
   },
-  optionSelected: { backgroundColor: "rgba(168, 85, 247, 0.15)" },
+  optionSelected: { backgroundColor: "rgba(20, 184, 166, 0.15)" },
   optionText: { color: "rgba(255,255,255,0.85)", fontSize: 15 },
-  optionTextSelected: { color: "#a855f7", fontWeight: "600" },
+  optionTextSelected: { color: "#14b8a6", fontWeight: "600" },
 });
 
 export default SelectField;

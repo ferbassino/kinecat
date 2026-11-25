@@ -32,34 +32,57 @@ const JumpLivePairScreen = ({ navigation }) => {
     return buildWsUrl(h, Number(port) || CMJ_LIVE_DEFAULT_PORT);
   }, [host, port]);
 
-  const canContinue = Boolean(wsUrl) && String(room).trim().length === 4;
+  const canContinue =
+    (Boolean(wsUrl) && String(room).trim().length >= 4) ||
+    false;
 
-  const applyPairing = useCallback(
-    (parsed) => {
-      if (!parsed) {
-        Alert.alert(
-          "QR inválido",
-          "No reconocí el código. Escaneá el QR de Evaluar → CMJ · sensor.",
-        );
-        return false;
-      }
-      setHost(parsed.host);
-      setPort(String(parsed.port || CMJ_LIVE_DEFAULT_PORT));
+  const applyPairing = useCallback((parsed) => {
+    if (!parsed) {
+      Alert.alert(
+        "QR inválido",
+        "No reconocí el código. Escaneá el QR de Evaluar → CMJ · sensor.",
+      );
+      return false;
+    }
+    if (parsed.transport === "pusher") {
+      setHost("");
       setRoom(parsed.room);
       return true;
-    },
-    [],
-  );
+    }
+    setHost(parsed.host);
+    setPort(String(parsed.port || CMJ_LIVE_DEFAULT_PORT));
+    setRoom(parsed.room);
+    return true;
+  }, []);
 
   const goLive = useCallback(
     (override) => {
-      const nextHost = override?.host || host;
-      const nextPort = override?.port || Number(port) || CMJ_LIVE_DEFAULT_PORT;
-      const nextRoom = String(override?.room || room)
+      const parsed = override || null;
+      const nextRoom = String(parsed?.room || room)
         .trim()
         .toUpperCase();
-      const nextWs = override?.wsUrl || buildWsUrl(nextHost, nextPort);
-      if (!nextWs || nextRoom.length !== 4) return;
+
+      if (parsed?.transport === "pusher" && parsed.token && nextRoom) {
+        navigation.navigate("JumpExercise", {
+          exercise: {
+            name: "CMJ",
+            type: "PP",
+            icon: "body-outline",
+            color: "#22d3ee",
+          },
+          liveTransport: "pusher",
+          liveToken: parsed.token,
+          liveRoom: nextRoom,
+          liveWsUrl: "",
+          defaultLegSide: "",
+        });
+        return;
+      }
+
+      const nextHost = parsed?.host || host;
+      const nextPort = parsed?.port || Number(port) || CMJ_LIVE_DEFAULT_PORT;
+      const nextWs = parsed?.wsUrl || buildWsUrl(nextHost, nextPort);
+      if (!nextWs || nextRoom.length < 4) return;
       navigation.navigate("JumpExercise", {
         exercise: {
           name: "CMJ",
@@ -67,6 +90,7 @@ const JumpLivePairScreen = ({ navigation }) => {
           icon: "body-outline",
           color: "#22d3ee",
         },
+        liveTransport: "lan",
         liveWsUrl: nextWs,
         liveRoom: nextRoom,
         defaultLegSide: "",
@@ -116,8 +140,8 @@ const JumpLivePairScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.lead}>
-          Misma Wi‑Fi que la PC. En la PC: npm run cmj-live y Evaluar → CMJ ·
-          sensor. Escaneá el QR o completá a mano.
+          Escaneá el QR de Evaluar → CMJ · sensor (cloud en producción, o LAN
+          local con npm run cmj-live).
         </Text>
 
         <TouchableOpacity style={styles.scanCta} onPress={openScanner}>

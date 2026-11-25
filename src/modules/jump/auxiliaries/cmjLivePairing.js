@@ -14,8 +14,9 @@ export const buildWsUrl = (host, port = DEFAULT_PORT) => {
 };
 
 /**
- * Parsea QR / pegado: kinecat://cmj-live?host=&port=&room=
- * también ws://host:port#ROOM o JSON.
+ * Parsea QR / pegado.
+ * Cloud: kinecat://cmj-live?transport=pusher&room=&token=
+ * LAN:   kinecat://cmj-live?host=&port=&room=
  */
 export const parsePairingPayload = (raw) => {
   const text = String(raw || "").trim();
@@ -24,13 +25,30 @@ export const parsePairingPayload = (raw) => {
   try {
     if (text.startsWith("{")) {
       const obj = JSON.parse(text);
-      const host = normalizeHost(obj.host || obj.h);
-      const port = Number(obj.port || obj.p) || DEFAULT_PORT;
+      const transport = String(obj.transport || "lan").toLowerCase();
       const room = String(obj.room || obj.r || "")
         .trim()
         .toUpperCase();
-      if (host && room.length === 4) {
-        return { host, port, room, wsUrl: buildWsUrl(host, port) };
+      if (transport === "pusher" && room && obj.token) {
+        return {
+          transport: "pusher",
+          room,
+          token: String(obj.token),
+          host: "",
+          port: 0,
+          wsUrl: "",
+        };
+      }
+      const host = normalizeHost(obj.host || obj.h);
+      const port = Number(obj.port || obj.p) || DEFAULT_PORT;
+      if (host && room.length >= 4) {
+        return {
+          transport: "lan",
+          host,
+          port,
+          room,
+          wsUrl: buildWsUrl(host, port),
+        };
       }
     }
   } catch {
@@ -47,13 +65,30 @@ export const parsePairingPayload = (raw) => {
         const [k, v] = part.split("=");
         params[decodeURIComponent(k)] = decodeURIComponent(v || "");
       }
-      const host = normalizeHost(params.host || params.h || "");
-      const port = Number(params.port || params.p) || DEFAULT_PORT;
+      const transport = String(params.transport || "lan").toLowerCase();
       const room = String(params.room || params.r || "")
         .trim()
         .toUpperCase();
-      if (host && room.length === 4) {
-        return { host, port, room, wsUrl: buildWsUrl(host, port) };
+      if (transport === "pusher" && room.length >= 4 && params.token) {
+        return {
+          transport: "pusher",
+          room,
+          token: String(params.token),
+          host: "",
+          port: 0,
+          wsUrl: "",
+        };
+      }
+      const host = normalizeHost(params.host || params.h || "");
+      const port = Number(params.port || params.p) || DEFAULT_PORT;
+      if (host && room.length >= 4) {
+        return {
+          transport: "lan",
+          host,
+          port,
+          room,
+          wsUrl: buildWsUrl(host, port),
+        };
       }
     }
   } catch {
@@ -72,8 +107,14 @@ export const parsePairingPayload = (raw) => {
         const room = String(hash || "")
           .trim()
           .toUpperCase();
-        if (host && room.length === 4) {
-          return { host, port, room, wsUrl: buildWsUrl(host, port) };
+        if (host && room.length >= 4) {
+          return {
+            transport: "lan",
+            host,
+            port,
+            room,
+            wsUrl: buildWsUrl(host, port),
+          };
         }
       }
     }

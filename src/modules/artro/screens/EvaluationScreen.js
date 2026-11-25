@@ -20,9 +20,10 @@ import {
   formatMovementLabel,
   formatSegmentLabel,
   formatSideLabel,
+  ARTRO_ACCENT,
 } from "../auxiliaries/artroHelpers";
 
-const ACCENT = "#a855f7";
+const ACCENT = ARTRO_ACCENT;
 const MEASUREMENT_DURATION_MS = TEST_TIME_MS;
 const MEASUREMENT_DURATION_S = Math.ceil(MEASUREMENT_DURATION_MS / 1000);
 
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(168, 85, 247, 0.3)",
+    borderColor: "rgba(20, 184, 166, 0.3)",
     marginBottom: 24,
   },
   infoTitle: { color: "#ffffff", fontSize: 18, fontWeight: "bold" },

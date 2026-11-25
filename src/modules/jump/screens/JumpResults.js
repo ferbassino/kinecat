@@ -17,6 +17,7 @@ import AccelerationChart from "../components/charts/AccelerationChart";
 import KinematicChart from "../components/charts/KinematicChart";
 import { exerciseData } from "../auxiliaries/objects/exerciseData";
 import jumpProcess from "./../auxiliaries/jumpProcess";
+import { sliceJumpChartSeries } from "../auxiliaries/cmj_Auxiliaries/findQuietTailEndIndex";
 import InvalidJumpModal from "../components/errorModal/InvalidJumpModal";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../auth/AuthContext";
@@ -56,6 +57,13 @@ const JumpResults = ({ route, navigation }) => {
       setShowInvalidModal(true);
     }
 
+    const fullJumpChart = sliceJumpChartSeries(
+      accY,
+      accT,
+      cMJDataObject.chartStartIndex,
+      cMJDataObject.chartEndIndex,
+    );
+
     setJumpData({
       velocity: cMJDataObject.velocity,
       velocidadPonderada: cMJDataObject.velocidadPonderada,
@@ -63,6 +71,8 @@ const JumpResults = ({ route, navigation }) => {
       arrayY13: cMJDataObject.arrayY13,
       arrayY13T: cMJDataObject.arrayY13T,
       arrayYF: cMJDataObject.arrayY0F || [],
+      fullJumpTime: fullJumpChart.timeData,
+      fullJumpAcc: fullJumpChart.accelerationData,
       xAxisArray: cMJDataObject.cMJXAxis || [],
       flightTime: cMJDataObject.tV || 0,
       flightHeight: cMJDataObject.alturaVuelo || 0,
@@ -124,8 +134,10 @@ const JumpResults = ({ route, navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <ExerciseHeader exercise={exercise} exerciseData={exerciseData} />
         <KinematicChart
-          timeData={accT}
-          accelerationData={accY}
+          timeData={jumpData.fullJumpTime?.length ? jumpData.fullJumpTime : accT}
+          accelerationData={
+            jumpData.fullJumpAcc?.length ? jumpData.fullJumpAcc : accY
+          }
           title={"SALTO COMPLETO"}
         />
 
@@ -253,7 +265,17 @@ const JumpResults = ({ route, navigation }) => {
 
         <View style={styles.buttonContainer}>
           <ActionButton
-            onPress={() => navigation.navigate("JumpExercise")}
+            onPress={() =>
+              navigation.navigate("JumpExercise", {
+                exercise,
+                bodyWeight,
+                legSide,
+                liveWsUrl: route.params?.liveWsUrl || "",
+                liveRoom: route.params?.liveRoom || "",
+                liveToken: route.params?.liveToken || "",
+                liveTransport: route.params?.liveTransport || "",
+              })
+            }
             text="EVALUAR MISMO SALTO"
             iconName="repeat-outline"
             colors={["#00ffff", "#00b4d8"]}
@@ -317,7 +339,15 @@ const JumpResults = ({ route, navigation }) => {
         visible={showInvalidModal}
         onRetry={() => {
           setShowInvalidModal(false);
-          navigation.navigate("JumpExercise", { exercise });
+          navigation.navigate("JumpExercise", {
+            exercise,
+            bodyWeight,
+            legSide,
+            liveWsUrl: route.params?.liveWsUrl || "",
+            liveRoom: route.params?.liveRoom || "",
+            liveToken: route.params?.liveToken || "",
+            liveTransport: route.params?.liveTransport || "",
+          });
         }}
         onClose={() => setShowInvalidModal(false)}
       />

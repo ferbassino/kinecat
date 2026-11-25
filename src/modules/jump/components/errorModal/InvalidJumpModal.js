@@ -65,7 +65,7 @@ const InvalidJumpModal = ({ visible, onRetry, onClose }) => {
               <View style={styles.tipItem}>
                 <Ionicons name="checkmark-circle" size={16} color="#00ffff" />
                 <Text style={styles.tipText}>
-                  Comenzar luego de la indicación: "AHORA"
+                  La captura ya corre antes de "AHORA"; saltá al escucharla
                 </Text>
               </View>
               <View style={styles.tipItem}>

@@ -2,11 +2,29 @@ export const instructions = {
   PP: {
     title: "CMJ",
     description:
-      "Parte de posición erguida, realiza un descenso rápido flexionando rodillas y caderas (fase excéntrica), seguido de un salto explosivo hacia arriba (fase concéntrica). Brazos impulsan hacia el cielo para maximizar altura.",
-    image: require("../../../../assets/bridge.png"),
+      "Pararse erguido, mantener el dispositivo con las dos manos sobre el pecho, esperar las instrucciones y no moverse hasta que se indique que la prueba finalizó.",
+    image: require("../../../../assets/jump.png"),
     icon: "arrow-up-circle-outline",
     color: "#3b82f6",
     gradient: ["#3b82f6", "#1d4ed8"],
+    tips: [
+      {
+        icon: "body-outline",
+        text: "Pararse erguido",
+      },
+      {
+        icon: "phone-portrait-outline",
+        text: "Mantener el dispositivo con las dos manos sobre el pecho",
+      },
+      {
+        icon: "ear-outline",
+        text: "Esperar las instrucciones",
+      },
+      {
+        icon: "hand-left-outline",
+        text: "No moverse hasta que se indique que la prueba finalizó",
+      },
+    ],
   },
   PL: {
     title: "DROP JUMP (DJ)",

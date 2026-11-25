@@ -22,6 +22,8 @@ const ModuleEvaluationContext = ({
   moduleId,
   accentColor = "#00ffff",
   compact = false,
+  hideConfigBanner = false,
+  hideSessionMeta = false,
 }) => {
   const {
     user,
@@ -43,6 +45,7 @@ const ModuleEvaluationContext = ({
     mode === "planned" &&
     planConfig &&
     hasMeaningfulModuleConfig(moduleId, planConfig);
+  const showConfigBanner = !hideConfigBanner && (hasPreset || !hideSessionMeta);
 
   return (
     <View style={styles.wrap}>
@@ -55,9 +58,11 @@ const ModuleEvaluationContext = ({
             <Text style={[styles.patientName, { color: accentColor }]}>
               {currentClient.name} {currentClient.surname}
             </Text>
-            <Text style={styles.patientMeta}>
-              {mode === "planned" ? sessionCopy.badge : sessionCopy.title}
-            </Text>
+            {!hideSessionMeta ? (
+              <Text style={styles.patientMeta}>
+                {mode === "planned" ? sessionCopy.badge : sessionCopy.title}
+              </Text>
+            ) : null}
           </View>
           <TouchableOpacity onPress={() => setConfirmClear(true)}>
             <Ionicons name="close-circle" size={22} color="rgba(255,255,255,0.45)" />
@@ -72,7 +77,7 @@ const ModuleEvaluationContext = ({
           }}
           accentColor={accentColor}
         />
-      ) : (
+      ) : hideSessionMeta ? null : (
         <View style={styles.guestBox}>
           <Ionicons name="information-circle-outline" size={18} color={accentColor} />
           <Text style={styles.guestText}>
@@ -81,42 +86,44 @@ const ModuleEvaluationContext = ({
         </View>
       )}
 
-      <View
-        style={[
-          styles.contextBanner,
-          hasPreset ? styles.contextBannerPlan : styles.contextBannerManual,
-          { borderColor: hasPreset ? `${accentColor}44` : "rgba(255,255,255,0.1)" },
-        ]}
-      >
-        <Ionicons
-          name={hasPreset ? "sparkles-outline" : "hand-left-outline"}
-          size={18}
-          color={hasPreset ? accentColor : "rgba(255,255,255,0.55)"}
-        />
-        <View style={styles.contextBody}>
-          <Text
-            style={[
-              styles.contextTitle,
-              { color: hasPreset ? accentColor : "rgba(255,255,255,0.75)" },
-            ]}
-          >
-            {hasPreset ? "Preset del plan KinApp" : "Configuración manual"}
-          </Text>
-          <Text style={styles.contextSubtitle}>
-            {hasPreset
-              ? `${presetSummary}. Podés modificarlo abajo antes de medir.`
-              : mode === "planned" && !hasPreset
-                ? "El plan no define preset para este módulo. Elegí las opciones manualmente."
-                : mode === "patient_no_plan"
-                  ? "Este paciente no tiene plan web. Elegí todo manualmente."
-                  : mode === "free"
-                    ? "Elegí paciente arriba para cargar su plan, o continuá en modo libre."
-                    : "Elegí las opciones de evaluación manualmente."}
-          </Text>
+      {showConfigBanner ? (
+        <View
+          style={[
+            styles.contextBanner,
+            hasPreset ? styles.contextBannerPlan : styles.contextBannerManual,
+            { borderColor: hasPreset ? `${accentColor}44` : "rgba(255,255,255,0.1)" },
+          ]}
+        >
+          <Ionicons
+            name={hasPreset ? "sparkles-outline" : "hand-left-outline"}
+            size={18}
+            color={hasPreset ? accentColor : "rgba(255,255,255,0.55)"}
+          />
+          <View style={styles.contextBody}>
+            <Text
+              style={[
+                styles.contextTitle,
+                { color: hasPreset ? accentColor : "rgba(255,255,255,0.75)" },
+              ]}
+            >
+              {hasPreset ? "Preset del plan KinApp" : "Configuración manual"}
+            </Text>
+            <Text style={styles.contextSubtitle}>
+              {hasPreset
+                ? `${presetSummary}. Podés modificarlo abajo antes de medir.`
+                : mode === "planned" && !hasPreset
+                  ? "El plan no define preset para este módulo. Elegí las opciones manualmente."
+                  : mode === "patient_no_plan"
+                    ? "Este paciente no tiene plan web. Elegí todo manualmente."
+                    : mode === "free"
+                      ? "Elegí paciente arriba para cargar su plan, o continuá en modo libre."
+                      : "Elegí las opciones de evaluación manualmente."}
+            </Text>
+          </View>
         </View>
-      </View>
+      ) : null}
 
-      {!compact && user && !currentClient ? (
+      {!compact && !hideConfigBanner && user && !currentClient ? (
         <Text style={styles.footerHint}>
           Tip: seleccionar paciente aquí aplica el mismo plan que configurás en KinApp web.
         </Text>

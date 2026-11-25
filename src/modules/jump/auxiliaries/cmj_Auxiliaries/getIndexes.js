@@ -1,3 +1,5 @@
+import { findQuietTailEndIndex } from "./findQuietTailEndIndex";
+
 const calculateMode = (arr) => {
   const frequency = {};
   let maxFreq = 0;
@@ -91,12 +93,17 @@ const getIndexes = (accY, modo, accT) => {
 
   const index5 = arrayY0.findIndex((el, index) => el < 0 && index > index4);
   const index6 = arrayY0.findIndex((el, index) => el > 0 && index > index5);
+  const indexEnd = findQuietTailEndIndex(arrayY0, {
+    index1,
+    index4,
+    fallbackEnd: index6 > 0 ? index6 : arrayY0.length - 1,
+  });
   const arrayY0F = [];
   const arrayY0Vuelo = [];
   const cMJXAxis = [];
 
   arrayY0.forEach((el, index) => {
-    if (index > index1 && index < index6) {
+    if (index > index1 && index <= indexEnd) {
       arrayY0F.push(Number(el.toFixed(3)));
       cMJXAxis.push(0);
     }
@@ -139,6 +146,7 @@ const getIndexes = (accY, modo, accT) => {
     arrayY4T,
     index5,
     index6,
+    indexEnd,
     arrayY0,
     arrayY3,
     arrayY4,

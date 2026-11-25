@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Accelerometer } from "expo-sensors";
-import Clinometer from "./clinometer/Clinometer";
 import { Ionicons } from "@expo/vector-icons";
 import ExerciseInstructions from "./ExerciseInstructions";
 import EvaluationMeasurementBlock from "../../../components/EvaluationMeasurementBlock";
@@ -21,13 +20,31 @@ import WeightSelector from "./selectors/WeightSelector";
 import { highPassFilter } from "../auxiliaries/cmj_Auxiliaries/filtros/highPassFilter";
 import { removeUpwardPeaksMulti } from "../auxiliaries/cmj_Auxiliaries/removeUpwardPeaksMulti";
 import jumpProcess from "../auxiliaries/jumpProcess";
+import { sliceJumpChartSeries } from "../auxiliaries/cmj_Auxiliaries/findQuietTailEndIndex";
 import { useAuth } from "../../../auth/AuthContext";
 import usePlanModuleConfig from "../../../hooks/usePlanModuleConfig";
 import useCmjLiveSocket from "../hooks/useCmjLiveSocket";
+import usePusherLiveSensor from "../hooks/usePusherLiveSensor";
 
 const MEASUREMENT_DURATION_MS = 6000;
 const MEASUREMENT_DURATION_S = 6;
 const LIVE_BATCH_MS = 50;
+/** Settle corto: la captura ya arranca ~350 ms antes de “Ahora”. */
+const TRIM_HEAD_SAMPLES = 15;
+const PRE_GO_LEAD_MS = 350;
+const INVALID_JUMP_MSG =
+  "Salto inválido: no se pudo validar el registro. Reintentá la prueba.";
+
+const extractLiveHost = (wsUrl = "") => {
+  if (!wsUrl) return "";
+  try {
+    const normalized = String(wsUrl).replace(/^ws/i, "http");
+    return new URL(normalized).hostname || "";
+  } catch {
+    const match = String(wsUrl).match(/\/\/([^/:]+)/);
+    return match?.[1] || "";
+  }
+};
 
 const packSeries = (arr) => {
   if (!Array.isArray(arr) || !arr.length) return [];
@@ -73,7 +90,15 @@ const ExerciseScreen = ({ route, navigation }) => {
     route.params?.defaultLegSide || planConfig?.defaultLegSide || "";
   const liveWsUrl = route.params?.liveWsUrl || "";
   const liveRoom = route.params?.liveRoom || "";
-  const liveEnabled = Boolean(liveWsUrl && liveRoom);
+  const liveToken = route.params?.liveToken || "";
+  const liveTransport =
+    route.params?.liveTransport ||
+    (liveToken ? "pusher" : liveWsUrl ? "lan" : "");
+  const liveCloudEnabled =
+    liveTransport === "pusher" && Boolean(liveToken && liveRoom);
+  const liveLanEnabled =
+    liveTransport !== "pusher" && Boolean(liveWsUrl && liveRoom);
+  const liveEnabled = liveCloudEnabled || liveLanEnabled;
   const accentColor = exercise.color || "#a3e635";
 
   const [isMeasuring, setIsMeasuring] = useState(false);
@@ -81,8 +106,16 @@ const ExerciseScreen = ({ route, navigation }) => {
   const [isStarting, setIsStarting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(MEASUREMENT_DURATION_S);
   const { cue, emit, runStartSequence } = useEvaluationCommands({ accentColor });
-  const [bodyWeight, setBodyWeight] = useState(null);
-  const [legSide, setLegSide] = useState(null);
+  const initialWeight = Number(route.params?.bodyWeight);
+  const initialLegSide = ["right", "left", "both"].includes(route.params?.legSide)
+    ? route.params.legSide
+    : null;
+  const [bodyWeight, setBodyWeight] = useState(
+    Number.isFinite(initialWeight) && initialWeight >= 30 && initialWeight <= 200
+      ? initialWeight
+      : null,
+  );
+  const [legSide, setLegSide] = useState(initialLegSide);
   const [showLegModal, setShowLegModal] = useState(false);
 
   const startTimeRef = useRef(null);
@@ -143,19 +176,24 @@ const ExerciseScreen = ({ route, navigation }) => {
     [applyLiveConfig],
   );
 
-  const {
-    status: liveStatus,
-    error: liveError,
-    roomState: liveRoomState,
-    send: liveSend,
-    connect: liveConnect,
-    isOpen: liveOpen,
-  } = useCmjLiveSocket({
+  const lanLive = useCmjLiveSocket({
     url: liveWsUrl,
     room: liveRoom,
-    enabled: liveEnabled,
+    enabled: liveLanEnabled,
     onCommand: handleLiveCommand,
   });
+
+  const cloudLive = usePusherLiveSensor({
+    room: liveRoom,
+    token: liveToken,
+    enabled: liveCloudEnabled,
+    onCommand: handleLiveCommand,
+  });
+
+  const liveSend = liveCloudEnabled ? cloudLive.send : lanLive.send;
+  const liveOpen = liveCloudEnabled ? cloudLive.isOpen : lanLive.isOpen;
+  const liveHostLabel =
+    extractLiveHost(liveWsUrl) || (liveCloudEnabled ? "cloud" : "");
 
   liveSendRef.current = liveSend;
   // No pisar refs con null si el live acaba de setear peso/lado desde la PC.
@@ -176,6 +214,21 @@ const ExerciseScreen = ({ route, navigation }) => {
     }
   };
 
+  const resetToReady = useCallback(() => {
+    clearMeasurementTimer();
+    stopAccelerometer();
+    if (liveBatchTimerRef.current) {
+      clearInterval(liveBatchTimerRef.current);
+      liveBatchTimerRef.current = null;
+    }
+    isMeasuringRef.current = false;
+    setIsMeasuring(false);
+    setIsStarting(false);
+    setIsProcessing(false);
+    setTimeLeft(MEASUREMENT_DURATION_S);
+    liveSend({ type: "status", phase: "idle" });
+  }, [liveSend]);
+
   const startMeasurement = async () => {
     const weight = bodyWeightRef.current;
     const side = legSideRef.current;
@@ -191,13 +244,26 @@ const ExerciseScreen = ({ route, navigation }) => {
     setIsStarting(true);
     liveSend({ type: "status", phase: "countdown" });
 
-    await runStartSequence({ accentColor });
-
-    setIsStarting(false);
-    startTimeRef.current = Date.now();
-    isMeasuringRef.current = true;
-    setIsMeasuring(true);
-    liveSend({ type: "status", phase: "measuring", timeLeft: MEASUREMENT_DURATION_S });
+    try {
+      await runStartSequence({
+        accentColor,
+        preGoLeadMs: PRE_GO_LEAD_MS,
+        onBeforeGo: async () => {
+          setIsStarting(false);
+          startTimeRef.current = Date.now();
+          isMeasuringRef.current = true;
+          setIsMeasuring(true);
+          liveSend({
+            type: "status",
+            phase: "measuring",
+            timeLeft: MEASUREMENT_DURATION_S,
+          });
+        },
+      });
+    } catch (err) {
+      console.warn("CMJ start sequence:", err);
+      resetToReady();
+    }
   };
 
   const stopMeasurement = async () => {
@@ -221,21 +287,25 @@ const ExerciseScreen = ({ route, navigation }) => {
       let currentData = [...dataRef.current];
 
       if (!currentData || currentData.length === 0) {
-        Alert.alert(
-          "Sin datos",
-          "No se recolectaron datos del sensor. Asegúrate de que el dispositivo esté estable.",
-        );
-        liveSend({ type: "status", phase: "idle" });
+        const message =
+          "Sin datos del sensor. Asegurate de que el dispositivo esté estable.";
+        liveSend({ type: "error", code: "no_data", message });
+        Alert.alert("Sin datos", message, [
+          { text: "OK", onPress: resetToReady },
+        ]);
+        resetToReady();
         return;
       }
-      if (currentData.length > 50) {
-        currentData = currentData.slice(50);
+      if (currentData.length > TRIM_HEAD_SAMPLES) {
+        currentData = currentData.slice(TRIM_HEAD_SAMPLES);
       } else {
-        Alert.alert(
-          "Datos insuficientes",
-          "No se recolectaron suficientes datos para un análisis válido.",
-        );
-        liveSend({ type: "status", phase: "idle" });
+        const message =
+          "Datos insuficientes para un análisis válido. Reintentá la prueba.";
+        liveSend({ type: "error", code: "insufficient_data", message });
+        Alert.alert("Datos insuficientes", message, [
+          { text: "OK", onPress: resetToReady },
+        ]);
+        resetToReady();
         return;
       }
 
@@ -258,23 +328,33 @@ const ExerciseScreen = ({ route, navigation }) => {
       const sideForResult = legSideRef.current || legSide || "";
 
       if (!Number.isFinite(weightForProcess) || weightForProcess < 30) {
-        Alert.alert(
-          "Peso inválido",
-          "Configurá un peso entre 30 y 200 kg antes de medir.",
-        );
-        liveSend({ type: "status", phase: "idle" });
+        const message =
+          "Peso inválido. Configurá un peso entre 30 y 200 kg antes de medir.";
+        liveSend({ type: "error", code: "invalid_weight", message });
+        Alert.alert("Peso inválido", message, [
+          { text: "OK", onPress: resetToReady },
+        ]);
+        resetToReady();
         return;
       }
 
       let charts = null;
       let metrics = null;
+      let jumpValidated = false;
       try {
         const { cMJDataObject = {} } =
           jumpProcess(response, testTimeInput, weightForProcess, accT) || {};
+        jumpValidated = Boolean(cMJDataObject.validated);
+        const fullJumpChart = sliceJumpChartSeries(
+          response,
+          accT,
+          cMJDataObject.chartStartIndex,
+          cMJDataObject.chartEndIndex,
+        );
         charts = {
           fullJump: {
-            t: packSeries(accT),
-            a: packSeries(response),
+            t: packSeries(fullJumpChart.timeData),
+            a: packSeries(fullJumpChart.accelerationData),
           },
           eccentricConcentric: {
             t: packSeries(cMJDataObject.arrayY13T),
@@ -288,7 +368,7 @@ const ExerciseScreen = ({ route, navigation }) => {
           },
         };
         metrics = {
-          validated: Boolean(cMJDataObject.validated),
+          validated: jumpValidated,
           flightHeight: cMJDataObject.alturaVuelo,
           flightTime: cMJDataObject.tV,
           takeoffSpeed: cMJDataObject.velD,
@@ -307,7 +387,12 @@ const ExerciseScreen = ({ route, navigation }) => {
         sampleCount: currentData.length,
         peakAz,
         durationMs: testTimeInput,
-        jumpHint: `CMJ listo · ${currentData.length} muestras · pico ${peakAz.toFixed(2)} g`,
+        jumpHint: jumpValidated
+          ? `CMJ listo · ${currentData.length} muestras · pico ${peakAz.toFixed(2)} g`
+          : INVALID_JUMP_MSG,
+        error: jumpValidated
+          ? null
+          : { code: "invalid_jump", message: INVALID_JUMP_MSG },
         bodyWeightKg: weightForProcess,
         legSide: sideForResult,
         charts,
@@ -324,11 +409,17 @@ const ExerciseScreen = ({ route, navigation }) => {
         legSide: sideForResult,
         accResultante: accResultanteSeteado,
         currentData,
+        liveWsUrl,
+        liveRoom,
+        liveToken,
+        liveTransport,
       });
     } catch (error) {
       console.error("Error procesando datos:", error);
-      Alert.alert("Error", "Ocurrió un error al procesar los datos");
-      liveSend({ type: "status", phase: "idle" });
+      const message = "Ocurrió un error al procesar los datos del salto.";
+      liveSend({ type: "error", code: "process_error", message });
+      Alert.alert("Error", message, [{ text: "OK", onPress: resetToReady }]);
+      resetToReady();
     } finally {
       setIsProcessing(false);
     }
@@ -472,34 +563,18 @@ const ExerciseScreen = ({ route, navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <ExerciseInstructions exercise={exercise.type} compactMode={true} />
-        <Clinometer />
 
         {liveEnabled ? (
-          <View style={styles.liveBanner}>
-            <Text style={styles.liveBannerTitle}>PC live · sala {liveRoom}</Text>
-            <Text style={styles.liveBannerText}>
-              WS {liveStatus}
-              {liveOpen
-                ? ` · viewers ${liveRoomState.viewers}`
-                : liveError
-                  ? ` · ${liveError}`
-                  : ""}
+          <View style={styles.liveStatusRow}>
+            <View
+              style={[
+                styles.liveStatusDot,
+                { backgroundColor: liveOpen ? "#22c55e" : "#ef4444" },
+              ]}
+            />
+            <Text style={styles.liveStatusText}>
+              {liveHostLabel || "—"}
             </Text>
-            <Text style={styles.liveBannerHint}>{liveWsUrl}</Text>
-            <Text style={styles.liveBannerHint}>
-              Misma Wi‑Fi que la PC. En el browser del celu probá{" "}
-              http://{String(liveWsUrl).replace(/^ws:\/\//, "").replace(/\/$/, "")}/
-              — si no carga, es red/firewall.
-            </Text>
-            {!liveOpen ? (
-              <TouchableOpacity style={styles.liveReconnect} onPress={liveConnect}>
-                <Text style={styles.liveReconnectText}>Reconectar</Text>
-              </TouchableOpacity>
-            ) : (
-              <Text style={styles.liveBannerHint}>
-                Podés iniciar desde el celular o desde la PC (Iniciar CMJ).
-              </Text>
-            )}
           </View>
         ) : null}
 
@@ -576,40 +651,26 @@ const ExerciseScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  liveBanner: {
+  liveStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 8,
     marginBottom: 12,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: "rgba(8, 145, 178, 0.2)",
-    borderWidth: 1,
-    borderColor: "rgba(34, 211, 238, 0.45)",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.06)",
   },
-  liveBannerTitle: {
-    color: "#67e8f9",
-    fontWeight: "800",
-    marginBottom: 4,
+  liveStatusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
-  liveBannerText: {
+  liveStatusText: {
     color: "#e2e8f0",
     fontSize: 13,
-  },
-  liveBannerHint: {
-    marginTop: 6,
-    color: "#94a3b8",
-    fontSize: 12,
-  },
-  liveReconnect: {
-    marginTop: 10,
-    alignSelf: "flex-start",
-    backgroundColor: "#0891b2",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  liveReconnectText: {
-    color: "#ecfeff",
-    fontWeight: "800",
-    fontSize: 13,
+    fontWeight: "600",
   },
   header: {
     flexDirection: "row",

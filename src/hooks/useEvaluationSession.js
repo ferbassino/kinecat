@@ -68,7 +68,7 @@ export function useEvaluationSession() {
           subtitle:
             "Este paciente no tiene plan en KinApp. Evaluás en modo manual; podés crear el plan desde la web.",
           badge: "Manual",
-          badgeColor: "#a855f7",
+          badgeColor: "#14b8a6",
         };
       default:
         return { title: "", subtitle: "", badge: "", badgeColor: "#888" };
